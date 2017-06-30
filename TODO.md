@@ -1,0 +1,4 @@
+- [ ] add robustness
+- [ ] check all return codes
+- [ ] improve README
+- [ ] add documentation

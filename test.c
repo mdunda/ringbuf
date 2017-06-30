@@ -25,8 +25,53 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "ringbuf.h"
+
+struct dummy_data_s
+{
+    int a;
+    int b;
+    int c;
+};
+
 int main()
 {
+    struct dummy_data_s d;
+    ringbuf_handle_t *rb;
+    size_t sz, i;
+    int j;
+
+    rb = ringbuf_init( 10, sizeof( struct dummy_data_s ) );
+    printf( "%lu\n", (unsigned long)rb );
+    sz = ringbuf_getsize( rb );
+    printf( "Ringbuffer size is %lu\n", sz );
+
+    for ( j = 3; j <= 16; j++ )
+    {
+        printf( "\nNew iteration, fill=%lu"
+                "  -------------------------------\n", ringbuf_getfill( rb ) );
+        for ( i = 0; i < j; i++ )
+        {
+            d.a = i;
+            d.b = 2 * i;
+            d.c = 3 * i;
+            ringbuf_send( rb, &d );
+            printf( "%lu. sent (%d,%d,%d) fill=%lu\n",
+                    i + 1, d.a, d.b, d.c,
+                    ringbuf_getfill( rb ) );
+            if ( i == 5 )
+                ringbuf_flush( rb );
+        }
+
+        i = 0;
+        while ( ringbuf_receive( rb, &d ) == 0 )
+        {
+            printf( "%lu. received (%d,%d,%d) fill=%lu\n",
+                    ++i, d.a, d.b, d.c,
+                    ringbuf_getfill( rb ) );
+        }
+    }
+
     return EXIT_SUCCESS;
 }
 
